@@ -1,10 +1,12 @@
-import java.util.Queue;
-import java.util.LinkedList;
-import java.util.Stack;
+// Versões recursivas usadas; remove dependência de Queue/LinkedList/Stack
 
 public class ArvoreBinaria<T> implements ArvoreBinariaInterface<T> {
 
    private NoBinario<T> raiz;
+   // Campos auxiliares usados pela busca recursiva do nó mais profundo
+   private int maxProf;
+   private NoBinario<T> maisProfundo;
+   private NoBinario<T> paiMaisProfundo;
 
    // Construtor que "adota" um nó raiz já criado
    public ArvoreBinaria(NoBinario<T> noRaiz) {
@@ -37,6 +39,18 @@ public class ArvoreBinaria<T> implements ArvoreBinariaInterface<T> {
          return encontrado;
       }
       return buscarRec(atual.getDireita(), dado);
+   }
+
+   // Achar o nó mais profundo (e seu pai) usando travessia recursiva
+   private void acharMaisProfundo(NoBinario<T> atual, NoBinario<T> pai, int profundidade) {
+      if (atual == null) return;
+      if (profundidade > this.maxProf) {
+         this.maxProf = profundidade;
+         this.maisProfundo = atual;
+         this.paiMaisProfundo = pai;
+      }
+      acharMaisProfundo(atual.getEsquerda(), atual, profundidade + 1);
+      acharMaisProfundo(atual.getDireita(), atual, profundidade + 1);
    }
 
    // Implementação do método que insere um nó na árvore.
@@ -97,25 +111,23 @@ public class ArvoreBinaria<T> implements ArvoreBinariaInterface<T> {
          return true;
       }
 
-      // Encontra o nó mais profundo (último em nível) usando BFS
-      Queue<NoBinario<T>> fila = new LinkedList<>();
-      fila.add(this.raiz);
-      NoBinario<T> profundo = null;
-      while (!fila.isEmpty()) {
-         NoBinario<T> atual = fila.poll();
-         profundo = atual;
-         if (atual.getEsquerda() != null) fila.add(atual.getEsquerda());
-         if (atual.getDireita() != null) fila.add(atual.getDireita());
-      }
+      // Encontra o nó mais profundo (último em nível) recursivamente
+      // Usa variáveis temporárias da instância durante a busca
+      this.maxProf = -1;
+      this.maisProfundo = null;
+      this.paiMaisProfundo = null;
+      acharMaisProfundo(this.raiz, null, 0);
+
+      NoBinario<T> profundo = this.maisProfundo;
+      NoBinario<T> paiProf = this.paiMaisProfundo;
 
       if (profundo == null) {
-         return false; // deve ser improvável
+         return false;
       }
 
       // Se o nó mais profundo é o próprio alvo, apenas desconecta-o
       if (profundo == alvo) {
-         NoBinario<T> paiProf = profundo.getPai();
-         if (paiProf == null) { // deveria ser raiz tratada acima
+         if (paiProf == null) { // era raiz
             this.raiz = null;
          } else if (paiProf.getEsquerda() == profundo) {
             paiProf.setEsquerda(null);
@@ -127,9 +139,7 @@ public class ArvoreBinaria<T> implements ArvoreBinariaInterface<T> {
 
       // Substitui o dado do alvo pelo dado do nó profundo e remove o nó profundo
       alvo.setDado(profundo.getDado());
-      NoBinario<T> paiProf = profundo.getPai();
       if (paiProf == null) {
-         // profundo era raiz (caso já tratado), mas cobre por segurança
          this.raiz = null;
       } else if (paiProf.getEsquerda() == profundo) {
          paiProf.setEsquerda(null);
@@ -147,18 +157,15 @@ public class ArvoreBinaria<T> implements ArvoreBinariaInterface<T> {
          System.out.println("(árvore vazia)");
          return;
       }
+      imprimirPreOrdemRec(this.raiz);
+      System.out.println();
+   }
 
-      Stack<NoBinario<T>> pilha = new Stack<>();
-      pilha.push(this.raiz);
-
-      while (!pilha.isEmpty()) {
-         NoBinario<T> atual = pilha.pop();
-         System.out.print(atual.getDado() + " ");
-         // empilha primeiro a direita, depois a esquerda para que a esquerda seja processada primeiro
-         if (atual.getDireita() != null) pilha.push(atual.getDireita());
-         if (atual.getEsquerda() != null) pilha.push(atual.getEsquerda());
-      }
-      System.out.println(); // nova linha ao final
+   private void imprimirPreOrdemRec(NoBinario<T> no) {
+      if (no == null) return;
+      System.out.print(no.getDado() + " ");
+      imprimirPreOrdemRec(no.getEsquerda());
+      imprimirPreOrdemRec(no.getDireita());
    }
 
    // Implementação do método que exibe a árvore em pós-ordem.
@@ -168,25 +175,15 @@ public class ArvoreBinaria<T> implements ArvoreBinariaInterface<T> {
          System.out.println("(árvore vazia)");
          return;
       }
-
-      // Método iterativo usando duas pilhas: s1 para processamento, s2 para ordem reversa
-      Stack<NoBinario<T>> s1 = new Stack<>();
-      Stack<NoBinario<T>> s2 = new Stack<>();
-
-      s1.push(this.raiz);
-      while (!s1.isEmpty()) {
-         NoBinario<T> atual = s1.pop();
-         s2.push(atual);
-         // empilhar esquerda e direita (não importa a ordem aqui)
-         if (atual.getEsquerda() != null) s1.push(atual.getEsquerda());
-         if (atual.getDireita() != null) s1.push(atual.getDireita());
-      }
-
-      // s2 contém os nós na ordem raiz-direita-esquerda; desempilhando obtemos pós-ordem
-      while (!s2.isEmpty()) {
-         System.out.print(s2.pop().getDado() + " ");
-      }
+      imprimirPosOrdemRec(this.raiz);
       System.out.println();
+   }
+
+   private void imprimirPosOrdemRec(NoBinario<T> no) {
+      if (no == null) return;
+      imprimirPosOrdemRec(no.getEsquerda());
+      imprimirPosOrdemRec(no.getDireita());
+      System.out.print(no.getDado() + " ");
    }
 
    // Implementação do método que exibe a árvore em ordem.
@@ -196,21 +193,15 @@ public class ArvoreBinaria<T> implements ArvoreBinariaInterface<T> {
          System.out.println("(árvore vazia)");
          return;
       }
-
-      Stack<NoBinario<T>> pilha = new Stack<>();
-      NoBinario<T> atual = this.raiz;
-
-      // iteração in-order: descer à esquerda empilhando, processar, ir à direita
-      while (atual != null || !pilha.isEmpty()) {
-         while (atual != null) {
-            pilha.push(atual);
-            atual = atual.getEsquerda();
-         }
-         atual = pilha.pop();
-         System.out.print(atual.getDado() + " ");
-         atual = atual.getDireita();
-      }
+      imprimirNaOrdemRec(this.raiz);
       System.out.println();
+   }
+
+   private void imprimirNaOrdemRec(NoBinario<T> no) {
+      if (no == null) return;
+      imprimirNaOrdemRec(no.getEsquerda());
+      System.out.print(no.getDado() + " ");
+      imprimirNaOrdemRec(no.getDireita());
    }
    
    // Implementação do método que retorna a raiz da árvore.
