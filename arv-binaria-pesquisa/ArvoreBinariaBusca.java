@@ -3,181 +3,204 @@ public class ArvoreBinariaBusca<T extends Comparable<T>> implements ArvoreBinari
 
    private NoBinario<T> raiz;
 
-   // Construtor
+   // Construtor: A BST começa vazia
    public ArvoreBinariaBusca() {
       this.raiz = null;
    }
 
-   // Implementação do método que insere um nó
-   @Override
+   // ------------------------------------------------------------
+   // Implementação do método de inserção de um nó
+   @Override 
    public void inserirNo(T dado) {
-      if (dado == null) {
-         throw new IllegalArgumentException("Dado para inserção não pode ser nulo.");
-      }
+      NoBinario<T> novoNo = new NoBinario<>(dado);
 
-      NoBinario<T> novo = new NoBinario<>(dado);
-
+      // CASO 1: Árvore está vazia
       if (this.raiz == null) {
-         this.raiz = novo;
+         this.raiz = novoNo;
          return;
       }
 
+      // CASO 2: Árvore não vazia (Iterativo)
       NoBinario<T> atual = this.raiz;
-      while (true) {
-         int cmp = dado.compareTo(atual.getDado());
-         if (cmp == 0) {
-            // Decide não permitir duplicatas
-            throw new IllegalArgumentException("Elemento já existe na árvore.");
-         } else if (cmp < 0) {
-            if (atual.getEsquerda() == null) {
-               atual.setEsquerda(novo);
-               return;
-            }
-            atual = atual.getEsquerda();
+      NoBinario<T> pai = null;
+
+      while (atual != null) {
+         pai = atual;
+         int comparacao = dado.compareTo(atual.getDado());
+
+         if (comparacao < 0) {
+            atual = atual.getEsquerda(); // Vai para a esquerda
+         } else if (comparacao > 0) {
+            atual = atual.getDireita(); // Vai para a direita
          } else {
-            if (atual.getDireita() == null) {
-               atual.setDireita(novo);
-               return;
-            }
-            atual = atual.getDireita();
+            System.out.println("Nó " + dado + " já existe (duplicado). Inserção cancelada.");
+            return;
          }
+      }
+
+      // 'pai' é o nó folha onde devemos inserir
+      if (dado.compareTo(pai.getDado()) < 0) {
+         pai.setEsquerda(novoNo);
+      } else {
+         pai.setDireita(novoNo);
       }
    } 
 
+
+   // ------------------------------------------------------------
    // Implementação do método que busca um nó
    @Override
    public NoBinario<T> buscarNo(T dado) {
-      if (dado == null) {
-         throw new IllegalArgumentException("Dado para busca não pode ser nulo.");
-      }
-
-      NoBinario<T> atual = this.raiz;
-      while (atual != null) {
-         int cmp = dado.compareTo(atual.getDado());
-         if (cmp == 0) {
-            return atual;
-         } else if (cmp < 0) {
-            atual = atual.getEsquerda();
-         } else {
-            atual = atual.getDireita();
-         }
-      }
-      return null;
+      return buscarNoRecursivo(this.raiz, dado);
    }
 
+   // Busca O(log n) - muito mais rápida
+   private NoBinario<T> buscarNoRecursivo(NoBinario<T> noAtual, T dado) {
+      if (noAtual == null) {
+         return null; // Não encontrado
+      }
+
+      int comparacao = dado.compareTo(noAtual.getDado());
+
+      if (comparacao == 0) {        // Encontrado
+         return noAtual; 
+      } else if (comparacao < 0) {  // Busca na esquerda
+         return buscarNoRecursivo(noAtual.getEsquerda(), dado); 
+      } else {                      // Busca na direita
+         return buscarNoRecursivo(noAtual.getDireita(), dado); 
+      }
+   }
+
+
+   // ------------------------------------------------------------
    // Implementação do método que exclui um nó
    @Override
    public void excluirNo(T dado) {
-      if (dado == null) {
-         throw new IllegalArgumentException("Dado para exclusão não pode ser nulo.");
-      }
-
-      NoBinario<T> alvo = buscarNo(dado);
-      if (alvo == null) {
-         return; // nada a fazer
-      }
-
-      // Caso 1: dois filhos -> encontrar sucessor (menor na subárvore direita)
-      if (alvo.getEsquerda() != null && alvo.getDireita() != null) {
-         NoBinario<T> sucessor = alvo.getDireita();
-         while (sucessor.getEsquerda() != null) {
-            sucessor = sucessor.getEsquerda();
-         }
-         // copia o dado do sucessor para o alvo e remove o sucessor
-         alvo.setDado(sucessor.getDado());
-         NoBinario<T> paiSuc = sucessor.getPai();
-         NoBinario<T> filhoSuc = sucessor.getDireita(); // sucessor não tem esquerda
-         if (paiSuc.getEsquerda() == sucessor) {
-            paiSuc.setEsquerda(filhoSuc);
-         } else {
-            paiSuc.setDireita(filhoSuc);
-         }
-         return;
-      }
-
-      // Caso 2/3: zero ou um filho
-      NoBinario<T> filho = (alvo.getEsquerda() != null) ? alvo.getEsquerda() : alvo.getDireita();
-      if (filho == null) {
-         // folha
-         NoBinario<T> pai = alvo.getPai();
-         if (pai == null) {
-            this.raiz = null; // era a raiz e única
-         } else if (pai.getEsquerda() == alvo) {
-            pai.setEsquerda(null);
-         } else {
-            pai.setDireita(null);
-         }
-      } else {
-         // um filho: copiar os dados do filho para o alvo e reencaminhar os netos
-         alvo.setDado(filho.getDado());
-         alvo.setEsquerda(filho.getEsquerda());
-         alvo.setDireita(filho.getDireita());
-      }
+      // A raiz é atualizada, caso ela própria seja excluída
+      this.raiz = excluirNoRecursivo(this.raiz, dado);
    }
 
-   // Implementação do método que imprime a árvore em pré-ordem
+   private NoBinario<T> excluirNoRecursivo(NoBinario<T> noAtual, T dado) {
+      // 1. Nó não encontrado
+      if (noAtual == null) {
+         return null; 
+      }
+
+      // 2. Procurando o nó...
+      int comparacao = dado.compareTo(noAtual.getDado());
+
+      if (comparacao < 0) {         // Nó está na esquerda
+         noAtual.setEsquerda( excluirNoRecursivo(noAtual.getEsquerda(), dado) );
+      } else if (comparacao > 0) {  // Nó está na direita
+         noAtual.setDireita( excluirNoRecursivo(noAtual.getDireita(), dado) );
+      } else {
+         // 3. Achou o nó (noAtual) para excluir
+            
+         // CENÁRIO 1: Nó folha
+         if (noAtual.getEsquerda() == null && noAtual.getDireita() == null) {
+            return null; // O pai receberá 'null'
+         }
+
+         // CENÁRIO 2: Nó com UM filho (direito)
+         if (noAtual.getEsquerda() == null) {
+            return noAtual.getDireita(); // Retorna o filho da direita para o pai
+         }
+
+         // CENÁRIO 2: Nó com UM filho (esquerdo)
+         if (noAtual.getDireita() == null) {
+            return noAtual.getEsquerda(); // Retorna o filho da esquerda para o pai
+         }
+
+         // CENÁRIO 3: Nó com DOIS filhos
+         // Encontrar o sucessor (o menor nó da sub-árvore direita)
+         NoBinario<T> sucessor = encontrarMenorValor(noAtual.getDireita());
+            
+         // Copiar o valor do sucessor para este nó
+         noAtual.setDado(sucessor.getDado());
+            
+         // Excluir o nó sucessor (que agora está duplicado) da sub-árvore direita
+         noAtual.setDireita( excluirNoRecursivo(noAtual.getDireita(), sucessor.getDado()) );
+      }
+
+      return noAtual; // Retorna o nó (modificado ou não)
+   }
+
+   // Método auxiliar para encontrar o Sucessor (Cenário 3)
+   private NoBinario<T> encontrarMenorValor(NoBinario<T> no) {
+      NoBinario<T> atual = no;
+      while (atual.getEsquerda() != null) {
+         atual = atual.getEsquerda();
+      }
+      return atual;
+   }
+
+
+   // ------------------------------------------------------------
+   // Implementação do método de impressão em pré-ordem
    @Override
    public void imprimirPreOrdem() {
-      if (this.raiz == null) {
-         System.out.println("(árvore vazia)");
-         return;
-      }
-      imprimirPreOrdemRec(this.raiz);
-      System.out.println();
+      imprimirPreOrdemRecursivo(this.raiz, 0);
    }
 
-   private void imprimirPreOrdemRec(NoBinario<T> no) {
-      if (no == null) return;
-      System.out.print(no.getDado() + " ");
-      imprimirPreOrdemRec(no.getEsquerda());
-      imprimirPreOrdemRec(no.getDireita());
+   private void imprimirPreOrdemRecursivo(NoBinario<T> noAtual, int nivel) {
+      if (noAtual == null) return;
+      // 1. Raiz
+      System.out.println(indentacao(nivel) + " " + noAtual.getDado()); 
+      // 2. Esquerda
+      imprimirPreOrdemRecursivo(noAtual.getEsquerda(), nivel + 1); 
+      // 3. Direita
+      imprimirPreOrdemRecursivo(noAtual.getDireita(), nivel + 1); 
    }
 
-   // Implementação do método que imprime a árvore em pós-ordem
+
+   // ------------------------------------------------------------
+   // Implementação do método de impressão em pós-ordem  
    @Override
    public void imprimirPosOrdem() {
-      if (this.raiz == null) {
-         System.out.println("(árvore vazia)");
-         return;
-      }
-      imprimirPosOrdemRec(this.raiz);
-      System.out.println();
+      imprimirPosOrdemRecursivo(this.raiz, 0);
    }
 
-   private void imprimirPosOrdemRec(NoBinario<T> no) {
-      if (no == null) return;
-      imprimirPosOrdemRec(no.getEsquerda());
-      imprimirPosOrdemRec(no.getDireita());
-      System.out.print(no.getDado() + " ");
+   private void imprimirPosOrdemRecursivo(NoBinario<T> noAtual, int nivel) {
+      if (noAtual == null) return;
+      // 1. Esquerda
+      imprimirPosOrdemRecursivo(noAtual.getEsquerda(), nivel + 1);
+      // 2. Direita 
+      imprimirPosOrdemRecursivo(noAtual.getDireita(), nivel + 1); 
+      // 3. Raiz
+      System.out.println(indentacao(nivel) + " " + noAtual.getDado()); 
    }
 
-   // Implementação do método que imprime a árvore em ordem
+
+   // ------------------------------------------------------------
+   // Implementação do método de impressão em ordem
    @Override
    public void imprimirNaOrdem() {
-      if (this.raiz == null) {
-         System.out.println("(árvore vazia)");
-         return;
-      }
-      imprimirNaOrdemRec(this.raiz);
-      System.out.println();
+      imprimirNaOrdemRecursivo(this.raiz, 0);
    }
 
-   private void imprimirNaOrdemRec(NoBinario<T> no) {
-      if (no == null) return;
-      imprimirNaOrdemRec(no.getEsquerda());
-      System.out.print(no.getDado() + " ");
-      imprimirNaOrdemRec(no.getDireita());
+   private void imprimirNaOrdemRecursivo(NoBinario<T> noAtual, int nivel) {
+      if (noAtual == null) return;
+      // 1. Esquerda
+      imprimirNaOrdemRecursivo(noAtual.getEsquerda(), nivel + 1); 
+      // 2. Raiz
+      System.out.println(indentacao(nivel) + " " + noAtual.getDado()); 
+      // 3. Direita
+      imprimirNaOrdemRecursivo(noAtual.getDireita(), nivel + 1); 
    }
 
+   private String indentacao(int nivel) {
+      if (nivel == 0) return "";
+      return " ".repeat(nivel * 3) + "|- ";
+   }
+
+   // ------------------------------------------------------------
    // Implementação do método que retorna a raiz da árvore
    @Override
-   public NoBinario<T> getRaiz() { 
-      return this.raiz;
-   }
+   public NoBinario<T> getRaiz() { return this.raiz; }
 
+
+   // ------------------------------------------------------------
    // Implementação do método que verifica se a árvore está vazia
    @Override
-   public boolean isVazia() { 
-        return this.raiz == null;
-   }
+   public boolean isVazia() { return this.raiz == null; }
 }
