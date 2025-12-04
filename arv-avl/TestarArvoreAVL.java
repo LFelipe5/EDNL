@@ -43,6 +43,19 @@ public class TestarArvoreAVL {
          System.out.println("\nExibição de terminal da árvore:");
          arvore.exibirArvoreTerminal();
 
+         arvore.excluirNo(arvore.getRaiz().getDado());
+         System.out.println("\nExibição de terminal da árvore após exclusão da raiz:");
+         arvore.exibirArvoreTerminal();
+
+         arvore.excluirNo(arvore.getRaiz().getDado());
+         System.out.println("\nExibição de terminal da árvore após exclusão da raiz:");
+         arvore.exibirArvoreTerminal();
+
+         arvore.excluirNo(arvore.getRaiz().getDado());
+         System.out.println("\nExibição de terminal da árvore após exclusão da raiz:");
+         arvore.exibirArvoreTerminal();
+         
+
       } catch (IllegalArgumentException e) {
          System.err.println("Erro na configuração: " + e.getMessage());
       } catch (Exception e) {
