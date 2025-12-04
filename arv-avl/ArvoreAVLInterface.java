@@ -17,6 +17,7 @@ public interface ArvoreAVLInterface<T extends Comparable<T>> {
    void imprimirNaOrdem(); 
 
    // Métodos de balanceamento -  FALTA IMPLEMENTAR
+   NoBinario<T> balancear(NoBinario<T> no);
 
    // Métodos de exibição da árvore - FALTA IMPLEMENTAR
    void exibirArvoreTerminal();

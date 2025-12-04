@@ -35,6 +35,14 @@ public class TestarArvoreAVL {
          //    arvore.inserir(valor);
          // }
 
+         ArvoreAVL<Integer> arvore = new ArvoreAVL<>();
+         for (Integer valor : chavesParaInserir) {
+            arvore.inserirNo(valor);
+         }
+         // 3. Exibe a árvore resultante
+         System.out.println("\nExibição de terminal da árvore:");
+         arvore.exibirArvoreTerminal();
+
       } catch (IllegalArgumentException e) {
          System.err.println("Erro na configuração: " + e.getMessage());
       } catch (Exception e) {

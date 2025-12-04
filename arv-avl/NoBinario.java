@@ -5,12 +5,14 @@ public class NoBinario<T> {
    private NoBinario<T> esquerda;
    private NoBinario<T> direita;
    private int fb; // fator de balanceamento (usado em árvores AVL)
+   private int altura; // altura do nó (1 para folha)
 
    // Construtor
    public NoBinario(T dado) {
-       this.setDado(dado);
-       // pai, esquerda e direita são 'null' por padrão
-       this.fb = 0; // fator de balanceamento inicial
+      this.setDado(dado);
+      // pai, esquerda e direita são 'null' por padrão
+      this.fb = 0; // fator de balanceamento inicial
+      this.altura = 1; // nó recém-criado tem altura 1
    }
 
    // Retorna o dado armazenado neste nó.
@@ -63,6 +65,12 @@ public class NoBinario<T> {
 
    // Define o fator de balanceamento.
    public void setFb(int fb) { this.fb = fb; }
+
+   // Retorna a altura do nó.
+   public int getAltura() { return this.altura; }
+
+   // Define a altura do nó.
+   public void setAltura(int altura) { this.altura = altura; }
 
    // Verifica se há nó filho à esquerda.
    public boolean temEsquerda() { return this.esquerda != null; }
