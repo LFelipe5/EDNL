@@ -32,14 +32,14 @@ public class TestarArvoreRN {
 
          // ----------------------------------------------------------------------
          // 3. Montando a árvore Rubro-Negra
-         ArvoreRubroNegra<Integer> arvoreTeste = new ArvoreRubroNegra<>();
+         ArvoreRB<Integer> arvoreTeste = new ArvoreRB<>();
          
          long inicio = System.nanoTime();
          for (Integer valor : chavesParaInserir) {
             arvoreTeste.inserirNo(valor);
          }
+         
          long fim = System.nanoTime();
-
          System.out.println("\nÁrvore montada em " + (fim - inicio) + " nanosegundos.");
          
          System.out.println("\nImpressão Pré-Ordem (R=Red, B=Black):");
@@ -47,6 +47,31 @@ public class TestarArvoreRN {
 
          System.out.println("\nRaiz da árvore: " + arvoreTeste.getRaiz().getDado() + 
                             " (" + arvoreTeste.getRaiz().getCor() + ")");
+
+         // arvoreTeste.excluirNo(arvoreTeste.getRaiz().getDado()); // Exclui a raiz para testar a remoção
+
+         // Remoção aleatórioa de dois valores valor
+         Collections.shuffle(chavesParaInserir);
+         for (int i = 0; i < 2 && i < chavesParaInserir.size(); i++) {
+            Integer valorParaRemover = chavesParaInserir.get(i);
+            System.out.println("\nRemovendo valor: " + valorParaRemover);
+            arvoreTeste.excluirNo(valorParaRemover);
+            System.out.println("Árvore após remoção de " + valorParaRemover + ":");
+            arvoreTeste.imprimirPreOrdem();
+         }
+
+         // busca de um valor aleatório que exista na árvore
+         if (!chavesParaInserir.isEmpty()) {
+            Integer valorParaBuscar = chavesParaInserir.get(3);
+            System.out.println("\nBuscando valor: " + valorParaBuscar);
+            NoRubroNegro<Integer> resultadoBusca = arvoreTeste.buscarNo(valorParaBuscar);
+            if (resultadoBusca != null) {
+               System.out.println("Valor encontrado: " + resultadoBusca.getDado() + 
+                                  " (" + resultadoBusca.getCor() + ")");
+            } else {
+               System.out.println("Valor " + valorParaBuscar + " não encontrado na árvore.");
+            }
+         }
 
       } catch (Exception e) {
          System.err.println("Erro: " + e.getMessage());

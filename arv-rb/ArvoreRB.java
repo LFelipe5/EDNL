@@ -1,26 +1,59 @@
-public class ArvoreRB {
+public class ArvoreRB <T extends Comparable<T>> implements ArvoreRubroNegraInterface<T> {
     private NoRubroNegro<T> raiz;
 
     public ArvoreRB() {
         this.raiz = null;
     }
 
-    public void inserirRB(T dado) {
-        NoRB novo = new NoRB(dado);
-
-        if (this.getRaiz() == null) {
-            Cor novaCor = Cor.PRETO;
-            novo.setCor(novaCor);
-            this.setRaiz(novo);
+    // Método para obter a raiz da árvore e inserir um nó na árvore Rubro-Negra
+    @Override
+    public void inserirNo(T dado) {
+        if (getRaiz() == null) {
+            NoRubroNegro<T> novo = new NoRubroNegro<>(dado);
+            novo.setCor(Cor.PRETO);
+            setRaiz(novo);
+            System.out.println("Nó " + dado + " inserido como raiz (preto).");
         } else {
-            Cor novaCor = Cor.VERMELHO;
-            novo = incluir(dado);
-            novo.setCor(novaCor);
-            verificaRegras(novo);
+            NoRubroNegro<T> inserido = inserirRecursivo(getRaiz(), dado);
+            if (inserido == null) return; // duplicado, nada a fazer
+            inserido.setCor(Cor.VERMELHO);
+            verificaRegras(inserido);
         }
     }
 
-    public void verificaRegras(NoRubroNegro<T> no) {
+    // Método auxiliar para inserir um nó na árvore Rubro-Negra de forma recursiva
+    private NoRubroNegro<T> inserirRecursivo(NoRubroNegro<T> no, T dado) {
+        if (no == null) {
+            // não deveria chegar aqui a partir da raiz; tratamento feito no chamador
+            return new NoRubroNegro<>(dado);
+        }
+
+        int cmp = dado.compareTo(no.getDado());
+        if (cmp < 0) {
+            if (no.getEsquerda() == null) {
+                NoRubroNegro<T> novo = new NoRubroNegro<>(dado);
+                no.setEsquerda(novo);
+                return novo;
+            } else {
+                return inserirRecursivo(no.getEsquerda(), dado);
+            }
+        } else if (cmp > 0) {
+            if (no.getDireita() == null) {
+                NoRubroNegro<T> novo = new NoRubroNegro<>(dado);
+                no.setDireita(novo);
+                return novo;
+            } else {
+                return inserirRecursivo(no.getDireita(), dado);
+            }
+        } else {
+            // duplicado: não insere
+            System.out.println("Nó " + dado + " já existe (duplicado). Inserção cancelada.");
+            return null;
+        }
+    }
+
+    // Método para verificar as regras da árvore Rubro-Negra após a inserção de um nó
+    private void verificaRegras(NoRubroNegro<T> no) {
         NoRubroNegro<T> pai = no.getPai();
         NoRubroNegro<T> avo, tio;
 
@@ -43,6 +76,7 @@ public class ArvoreRB {
         }
     }
 
+    // Método para realizar a recoloração dos nós em caso de violação das regras da árvore Rubro-Negra
     private void recoloracao(NoRubroNegro<T> no, NoRubroNegro<T> pai, NoRubroNegro<T> tio, NoRubroNegro<T> avo) {
         // Aqui o pai e o tio do no serão pintados de negros e o avo de rubro
         Cor vermelho = Cor.VERMELHO;
@@ -50,13 +84,14 @@ public class ArvoreRB {
         pai.setCor(preto);
         tio.setCor(preto);
 
-        if (avo != raiz) {
+        if (avo != getRaiz()) {
             avo.setCor(vermelho);
         }
 
         verificaRegras(avo);
     }
 
+    // Método para realizar as rotações necessárias em caso de violação das regras da árvore Rubro-Negra
     private void rotacoes(NoRubroNegro<T> no, NoRubroNegro<T> pai, NoRubroNegro<T> tio, NoRubroNegro<T> avo) {
         if (pai.getEsquerda() == no && avo.getEsquerda() == pai) {
             rotacaoDireita(avo);
@@ -69,6 +104,7 @@ public class ArvoreRB {
         }
     }
 
+    // Método de rotação simples à direita
     private NoRubroNegro<T> rotacaoDireita(NoRubroNegro<T> no) {
         NoRubroNegro<T> sucessorNovoNegro = no.getEsquerda(); // filho que será o negro no topo
         Cor vermelho = Cor.VERMELHO;
@@ -101,6 +137,7 @@ public class ArvoreRB {
         return sucessorNovoNegro;
     }
 
+    // Método de rotação simples à esquerda
     private NoRubroNegro<T> rotacaoEsquerda(NoRubroNegro<T> no) {
         NoRubroNegro<T> sucessorNovoNegro = no.getDireita();
         Cor vermelho = Cor.VERMELHO;
@@ -131,17 +168,20 @@ public class ArvoreRB {
         no.setCor(vermelho);
         return sucessorNovoNegro;
     }
-
+    
+    // Métodos de rotação dupla direita
     private void rotacaoDireitaDupla(NoRubroNegro<T> no) {
         rotacaoEsquerda(no.getEsquerda());
         rotacaoDireita(no);
     }
 
+    // Método de rotação dupla esquerda
     private void rotacaoEsquerdaDupla(NoRubroNegro<T> no) {
         rotacaoDireita(no.getDireita());
         rotacaoEsquerda(no);
     }
 
+    // Método para contar a quantidade de filhos de um nó
     private int quantidadeFilhos(NoRubroNegro<T> no) {
         if (no == null) return 0;
         int count = 0;
@@ -154,79 +194,84 @@ public class ArvoreRB {
         return count;
     }
 
+    // Método para excluir um nó da árvore Rubro-Negra, considerando as regras de balanceamento
     @Override
     public void excluirNo(T dado) {
-        NoRubroNegro<T> n = buscarNo(dado);
+        NoRubroNegro<T> no = buscarNo(dado);
+        if (no == null) return;
+
         Cor vermelho = Cor.VERMELHO;
         Cor preto = Cor.PRETO;
-        int quantFilhos = quantidadeFilhos(n);
+        int quantFilhos = quantidadeFilhos(no);
 
         if (quantFilhos == 0) {
-            if (n == raiz) {
+            if (no == getRaiz()) {
                 setRaiz(null);
-                remover(dado);
+                remover(no);
             }
-            if (n.getCor() == vermelho) { // se é rubro, só remove
-                remover(dado);
-            } else if (n.getCor() == preto) {
-                remover(dado);
-                boolean isLeft = n == n.getPai().getEsquerda();
-                checagemDuploNegro(n.getPai(), isLeft); // vai direto para a situação 3 (casos recursivos), is left aqui mostrará se n é filho esquerdo
+            if (no.getCor() == vermelho) { // se é rubro, só remove
+                remover(no);
+            } else if (no.getCor() == preto) {
+                remover(no);
+                boolean isLeft = no == no.getPai().getEsquerda();
+                checagemDuploNegro(no.getPai(), isLeft); // vai direto para a situação 3 (casos recursivos), is left aqui mostrará se n é filho esquerdo
             }
 
         } else if (quantFilhos == 1) {
-            if (n == raiz) { // n só tem um filho e é a raiz. Neste caso ele só pode ter filho rubro pelas
+            if (no == getRaiz()) { // no só tem um filho e é a raiz. Neste caso ele só pode ter filho rubro pelas
                 // regras, e este será pintado de preto
-                setRaiz(n.getEsquerda() != null ? n.getEsquerda() : n.getDireita()); // se n é a raiz, seu filho
+                setRaiz(no.getEsquerda() != null ? no.getEsquerda() : no.getDireita()); // se no é a raiz, seu filho
                 // será a raiz
-                if (n.getDireita() != null && n.getDireita().getCor() == vermelho) {
-                    n.getDireita().setCor(preto);
+                if (no.getDireita() != null && no.getDireita().getCor() == vermelho) {
+                    no.getDireita().setCor(preto);
                 }
-                remover(dado);
+                remover(no);
             }
-            if (n.getCor() == vermelho) { // se tem 1 filho e é rubro o filho é negro pelas regras só substitui
-                remover(dado);
-            } else if (n.getCor() == preto) { // n é negro e seu filho pode ser rubro ou negro
+            if (no.getCor() == vermelho) { // se tem 1 filho e é rubro o filho é negro pelas regras só substitui
+                remover(no);
+            } else if (no.getCor() == preto) { // no é negro e seu filho pode ser rubro ou negro
                 // Achar posição do seu filho
                 NoRubroNegro<T> filho;
-                if(n.getEsquerda() != null){
-                    filho = n.getEsquerda();
+                if(no.getEsquerda() != null){
+                    filho = no.getEsquerda();
                 } else {
-                    filho = n.getDireita();
+                    filho = no.getDireita();
                 }
 
                 if(filho.getCor() == vermelho){ // Prévia da situação 2, pinta filho de negro e acabou
                     filho.setCor(preto);
-                    remover(n.getDado());
+                    remover(no);
                 }else{ // Se filho tbm é negro, segue direto para situação 3
-                    remover(dado);
-                    boolean isLeft = filho == n.getEsquerda();
-                    checagemDuploNegro(n, isLeft); // is left aqui mostrará se seu unico filho é esquerdo
+                    remover(no);
+                    boolean isLeft = filho == no.getEsquerda();
+                    checagemDuploNegro(no, isLeft); // is left aqui mostrará se seu unico filho é esquerdo
                 }
             }
 
         } else { // casos que tem 2 filhos seguem para as 4 possíveis situações
-            removerComRegras(n);
+            removerComRegras(no);
         }
     }
 
+    // Método para buscar um nó desejado presente na árvore
     @Override
     public NoRubroNegro<T> buscarNo(T dado) {
-        return buscarNoRecursivo(this.raiz, dado);
+        return buscarNoRecursivo(getRaiz(), dado);
     }
 
-    private NoBinario<T> buscarNoRecursivo(NoBinario<T> noAtual, T dado) {
+    // Método auxiliar para buscar recursivamente um nó desejado presente na árvore
+    private NoRubroNegro<T> buscarNoRecursivo(NoRubroNegro<T> noAtual, T dado) {
       // Caso 1: Nó não encontrado (chegou ao fim de um galho)
       if (noAtual == null) {
          return null;
       }
-      // Caso 2: Encontrado!
+      // Caso 2: Encontrado
       if (noAtual.getDado().equals(dado)) {
          return noAtual;
       }
         
       // Caso 3: (Passo Recursivo) Procura na sub-árvore esquerda
-      NoBinario<T> noEncontrado = buscarNoRecursivo(noAtual.getEsquerda(), dado);
+      NoRubroNegro<T> noEncontrado = buscarNoRecursivo(noAtual.getEsquerda(), dado);
         
       // Se não achou na esquerda, procura na direita
       if (noEncontrado == null) {
@@ -236,34 +281,36 @@ public class ArvoreRB {
       return noEncontrado;
    }
     
-    private void removerComRegras(NoRubroNegro<T> n) {
-        NoRubroNegro<T> sucessor = encontrarMenorNoRB(n.getDireita());
+   // Método auxiliar para remover um nó com 2 filhos, considerando as regras de balanceamento da árvore Rubro-Negra
+    private void removerComRegras(NoRubroNegro<T> no) {
+        NoRubroNegro<T> sucessor = encontrarMenorNoRB(no.getDireita());
         NoRubroNegro<T> paiSucessor = sucessor.getPai();
         Cor vermelho = Cor.VERMELHO;
         Cor preto = Cor.PRETO;
 
         boolean isLeft = false;
+
         // Verifico se é filho esquerdo
         if (sucessor == sucessor.getPai().getEsquerda()) {
             isLeft = true;
         }
 
         // SITUAÇÃO 1: NO RUBRO E SUCESSOR RUBRO
-        if (n.getCor() == vermelho && sucessor.getCor() == vermelho && sucessor != null) {
-            remover(n.getKey());
+        if (no.getCor() == vermelho && sucessor.getCor() == vermelho && sucessor != null) {
+            remover(no);
             // SITUAÇÃO 2: NO NEGRO E SUCESSOR RUBRO
-        } else if (n.getCor() == preto && sucessor.getCor() == vermelho && sucessor != null) {
+        } else if (no.getCor() == preto && sucessor.getCor() == vermelho && sucessor != null) {
             sucessor.setCor(preto);
-            remover(n.getDado());
+            remover(no);
             // SITUAÇÃO 3: NO NEGRO E SUCESSOR NEGRO
-        } else if (n.getCor() == preto && sucessor.getCor() == preto && sucessor != null) {
-            remover(n.getDado());
+        } else if (no.getCor() == preto && sucessor.getCor() == preto && sucessor != null) {
+            remover(no);
             checagemDuploNegro(paiSucessor, isLeft);
 
             // SITUAÇÃO 4: NO RUBRO E SUCESSOR NEGRO
-        } else if (n.getCor() == vermelho && sucessor.getCor() == preto && sucessor != null) {
+        } else if (no.getCor() == vermelho && sucessor.getCor() == preto && sucessor != null) {
             sucessor.setCor(vermelho);
-            remover(n.getDado());
+            remover(no);
             checagemDuploNegro(paiSucessor, isLeft);
 
         }
@@ -272,10 +319,7 @@ public class ArvoreRB {
     // Método que remove fisicamente o nó com dado igual a `dado`.
     // Se o nó tiver dois filhos, substitui o dado pelo sucessor (menor da subárvore direita)
     // e remove o sucessor (que terá no máximo um filho).
-    private void remover(T dado) {
-        NoRubroNegro<T> no = buscarNo(dado);
-        if (no == null) return;
-
+    private NoRubroNegro remover(NoRubroNegro<T> no) {
         // Se tem 2 filhos, troca o dado com o sucessor e passa a remover o sucessor
         if (no.getEsquerda() != null && no.getDireita() != null) {
             NoRubroNegro<T> sucessor = encontrarMenorNoRB(no.getDireita());
@@ -288,7 +332,7 @@ public class ArvoreRB {
 
         if (filho != null) { // caso com um filho
             if (no.getPai() == null) { // removendo raiz
-                this.raiz = filho;
+                setRaiz(filho);
                 filho.setPai(null);
             } else {
                 if (no == no.getPai().getEsquerda()) {
@@ -299,7 +343,7 @@ public class ArvoreRB {
             }
         } else { // caso folha
             if (no.getPai() == null) { // é a raiz
-                this.raiz = null;
+                setRaiz(null);
             } else {
                 if (no == no.getPai().getEsquerda()) {
                     no.getPai().setEsquerda(null);
@@ -308,8 +352,12 @@ public class ArvoreRB {
                 }
             }
         }
+
+        return no;
     }
 
+    // Método auxiliar para encontrar o menor nó da subárvore direita
+    // Usado para encontrar o sucessor em casos de remoção de nós com 2 filhos
     private NoRubroNegro<T> encontrarMenorNoRB(NoRubroNegro<T> NoRB) {
         while (NoRB.getEsquerda() != null) {
             NoRB = NoRB.getEsquerda();
@@ -317,6 +365,7 @@ public class ArvoreRB {
         return NoRB;
     }
 
+    // Método auxiliar para realizar a checagem de nós duplo-negro
     private void checagemDuploNegro(NoRubroNegro<T> current, boolean isLeft) { // na 1° vez recebo o pai do sucessor
         Cor vermelho = Cor.VERMELHO;
         Cor preto = Cor.PRETO;
@@ -427,7 +476,7 @@ public class ArvoreRB {
                 && current.getDireita().getCor() == preto
                 && current.getDireita().getDireita() != null
                 && current.getDireita().getDireita().getCor() == vermelho) {
-            char corPai = current.getCor();
+            Cor corPai = current.getCor();
             current.getDireita().setCor(corPai);
             current.setCor(preto);
             current.getDireita().getDireita().setCor(preto);
@@ -439,7 +488,7 @@ public class ArvoreRB {
                 && current.getEsquerda().getCor() == preto
                 && current.getEsquerda().getEsquerda() != null
                 && current.getEsquerda().getEsquerda().getCor() == vermelho) {
-            char corPai = current.getCor();
+            Cor corPai = current.getCor();
             current.getEsquerda().setCor(corPai);
             current.setCor(preto);
             current.getEsquerda().getEsquerda().setCor(preto);
@@ -447,20 +496,22 @@ public class ArvoreRB {
             return; // Caso terminal!
         }
 
-        if (current == raiz) {
+        if (current == getRaiz()) {
             return;
         }
     }
 
+    // Métodos para imprimir a árvore em pré-ordem, pós-ordem e na ordem, mostrando a cor de cada nó
     @Override
     public void imprimirPreOrdem() {
-        imprimirPreOrdemRecursivo(this.raiz, 0);
+        imprimirPreOrdemRecursivo(getRaiz(), 0);
     }
 
-    private void imprimirPreOrdemRecursivo(NoBinario<T> noAtual, int nivel) {
+    private void imprimirPreOrdemRecursivo(NoRubroNegro<T> noAtual, int nivel) {
         if (noAtual == null) return;
         // 1. Raiz
-        System.out.println(indentacao(nivel) + " " + noAtual.getDado()); 
+        char cor = (noAtual.getCor() == Cor.VERMELHO) ? 'R' : 'B';
+        System.out.println(indentacao(nivel) + " " + noAtual.getDado() + " (" + cor + ")"); 
         // 2. Esquerda
         imprimirPreOrdemRecursivo(noAtual.getEsquerda(), nivel + 1); 
         // 3. Direita
@@ -469,30 +520,32 @@ public class ArvoreRB {
 
     @Override
     public void imprimirPosOrdem() {
-        imprimirPosOrdemRecursivo(this.raiz, 0);
+        imprimirPosOrdemRecursivo(getRaiz(), 0);
     }
 
-    private void imprimirPosOrdemRecursivo(NoBinario<T> noAtual, int nivel) {
+    private void imprimirPosOrdemRecursivo(NoRubroNegro<T> noAtual, int nivel) {
         if (noAtual == null) return;
         // 1. Esquerda
         imprimirPosOrdemRecursivo(noAtual.getEsquerda(), nivel + 1);
         // 2. Direita 
         imprimirPosOrdemRecursivo(noAtual.getDireita(), nivel + 1); 
         // 3. Raiz
-        System.out.println(indentacao(nivel) + " " + noAtual.getDado()); 
+        char cor = (noAtual.getCor() == Cor.VERMELHO) ? 'R' : 'B';
+        System.out.println(indentacao(nivel) + " " + noAtual.getDado() + " (" + cor + ")"); 
     }
 
     @Override
     public void imprimirNaOrdem() {
-        imprimirNaOrdemRecursivo(this.raiz, 0);
+        imprimirNaOrdemRecursivo(getRaiz(), 0);
     }
 
-    private void imprimirNaOrdemRecursivo(NoBinario<T> noAtual, int nivel) {
+    private void imprimirNaOrdemRecursivo(NoRubroNegro<T> noAtual, int nivel) {
         if (noAtual == null) return;
         // 1. Esquerda
         imprimirNaOrdemRecursivo(noAtual.getEsquerda(), nivel + 1); 
         // 2. Raiz
-        System.out.println(indentacao(nivel) + " " + noAtual.getDado()); 
+        char cor = (noAtual.getCor() == Cor.VERMELHO) ? 'R' : 'B';
+        System.out.println(indentacao(nivel) + " " + noAtual.getDado() + " (" + cor + ")"); 
         // 3. Direita
         imprimirNaOrdemRecursivo(noAtual.getDireita(), nivel + 1); 
     }
@@ -502,9 +555,16 @@ public class ArvoreRB {
         return " ".repeat(nivel * 3) + "|- ";
     }
 
+    // Método para obter a raiz da árvore
     @Override
     public NoRubroNegro<T> getRaiz() { return this.raiz; }
 
+    // Método para verificar se a árvore está vazia
     @Override
     public boolean isVazia() { return this.raiz == null; }
+
+    // Método para definir a raiz da árvore
+    private void setRaiz(NoRubroNegro<T> raiz) { this.raiz = raiz; }
+
+    
 }
