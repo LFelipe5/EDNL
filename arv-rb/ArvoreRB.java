@@ -566,5 +566,4 @@ public class ArvoreRB <T extends Comparable<T>> implements ArvoreRubroNegraInter
     // Método para definir a raiz da árvore
     private void setRaiz(NoRubroNegro<T> raiz) { this.raiz = raiz; }
 
-    
 }
