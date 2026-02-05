@@ -4,6 +4,7 @@
  */
 public class Aresta {
    // ATRIBUTOS
+
    private String destino;           // Endereço IP do nó de destino (Vértice adjacente)
    private int totalPacotes;         // Número total de ocorrências desta conexão no log
    private double mediaTamanhoBytes;  // Média do volume de dados trafegados nesta aresta
@@ -22,4 +23,6 @@ public class Aresta {
    // MÉTODOS GETTERS: Permitem que os algoritmos de busca leiam os pesos e destinos
    public String getDestino() { return destino; }
    public double getMediaLatencia() { return mediaLatencia; }
+   public int getTotalPacotes() { return totalPacotes; }
+   public double getMediaTamanhoBytes() { return mediaTamanhoBytes; }
 }
