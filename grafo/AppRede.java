@@ -9,7 +9,10 @@ public class AppRede {
       // INICIALIZAÇÃO DE ATRIBUTOS (Implementações via Polimorfismo)
       Scanner sc = new Scanner(System.in);
       GrafoInterface grafo = new GrafoRede();
-      BuscadorInterface buscador = new BuscadorRede();
+      BuscadorInterface buscador_dijkstra = new BuscadorRede();
+      BuscadorInterface buscador_floyd = new BuscadorRede();
+      BuscadorInterface buscador_bfs = new BuscadorRede();
+      BuscadorInterface buscador_tsp = new BuscadorRede();
       LeitorJSON leitor = new LeitorJSON();
 
       System.out.println(">>> ANALISADOR DE REDE EM GRAFOS <<<");
@@ -28,7 +31,7 @@ public class AppRede {
       }
 
       // EXIBIÇÃO DIJKSTRA: Requer laço de repetição manual para colorir as setas '->'
-      BuscadorRede.ResultadoBusca res = buscador.encontrarCaminhoDijkstra(grafo, o, d);
+      BuscadorRede.ResultadoBusca res = buscador_dijkstra.encontrarCaminhoDijkstra(grafo, o, d);
       if (res != null) {
          System.out.print("\n[DIJKSTRA] Rota: ");
          List<String> path = res.getCaminho();
@@ -45,9 +48,9 @@ public class AppRede {
       }
 
       // EXECUÇÃO DOS DEMAIS MÉTODOS ANALÍTICOS
-      buscador.executarBFS(grafo, o, d);
-      buscador.executarFloydWarshall(grafo, o, d);
-      buscador.executarTSP(grafo, o, d);
+      buscador_bfs.executarBFS(grafo, o, d);
+      buscador_floyd.executarFloydWarshall(grafo, o, d);
+      buscador_tsp.executarTSP(grafo, o, d);
 
       // FINALIZAÇÃO: Exportação para análise visual
       new ExportadorGephi().exportarParaCSV(grafo, "analise_gephi.csv");

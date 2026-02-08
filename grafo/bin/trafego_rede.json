@@ -1,0 +1,13 @@
+[
+{ "origem": "10.0.0.1", "destino": "10.0.0.2", "bytes": 1200, "latencia": 0.010},
+{ "origem": "10.0.0.2", "destino": "10.0.0.3", "bytes": 800, "latencia": 0.025},
+{ "origem": "10.0.0.3", "destino": "10.0.0.4", "bytes": 1500, "latencia": 0.030},
+{ "origem": "10.0.0.4", "destino": "10.0.0.5", "bytes": 600, "latencia": 0.020},
+{ "origem": "10.0.0.5", "destino": "10.0.0.6", "bytes": 900, "latencia": 0.050},
+{ "origem": "10.0.0.6", "destino": "10.0.0.1", "bytes": 700, "latencia": 0.045},
+{ "origem": "10.0.0.2", "destino": "10.0.0.5", "bytes": 400, "latencia": 0.018},
+{ "origem": "10.0.0.3", "destino": "10.0.0.1", "bytes": 300, "latencia": 0.022},
+{ "origem": "10.0.0.4", "destino": "10.0.0.2", "bytes": 1100, "latencia": 0.027},
+{ "origem": "10.0.0.5", "destino": "10.0.0.3", "bytes": 500, "latencia": 0.035},
+{ "origem": "10.0.0.6", "destino": "10.0.0.4", "bytes": 650, "latencia": 0.040}
+]

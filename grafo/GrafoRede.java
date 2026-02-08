@@ -10,7 +10,6 @@ public class GrafoRede implements GrafoInterface {
     }
 
     // Implementação dos métodos definidos na interface GrafoInterface
-
     @Override
     public void adicionarDadosBrutos(String origem, String destino, int bytes, double latencia) {
         // Garante que o nó de origem existe na lista de adjacência
@@ -45,24 +44,33 @@ public class GrafoRede implements GrafoInterface {
     @Override
     public List<Aresta> obterAdjacentes(String ip) {
         // Lógica para retornar os vizinhos diretos de um determinado nó
-        return null;
+        return listaAdjacencia.getOrDefault(ip, new ArrayList<>());
     }
 
     @Override
     public Set<String> obterTodosOsIps() {
         // Lógica para retornar o conjunto de todos os IPs únicos presentes no grafo
-        return null;
+        Set<String> todosOsIps = new HashSet<>(listaAdjacencia.keySet());
+        
+        // Adiciona também os IPs de destino das arestas
+        for (List<Aresta> arestas : listaAdjacencia.values()) {
+            for (Aresta aresta : arestas) {
+                todosOsIps.add(aresta.getDestino());
+            }
+        }
+        
+        return todosOsIps;
     }
 
     @Override
     public int getQuantidadeNos() {
         // Lógica para retornar a contagem total de vértices (nós) do grafo
-        return 0;
+        return obterTodosOsIps().size();
     }
 
     @Override
     public boolean existeIp(String ip) {
         // Lógica para validar se um determinado vértice existe na estrutura
-        return false;
+        return obterTodosOsIps().contains(ip);
     }
 }
